@@ -149,32 +149,21 @@ const App = {
 
     // Handle multi-slot fills
     if (next === 'CK') {
-      // Auto-fill: CK = 2 sub-slots. Check if there's room.
+      // Auto-fill: CK normally covers 2 sub-slots (30 min).
+      // But DON'T overwrite a break or lunch in the next slot.
       if (subSlot + 1 <= emp.endSubSlot) {
-        // Check both slots are CK-able
-        if (getRole(emp, subSlot) !== null && getRole(emp, subSlot + 1) !== null) {
+        var nextRole = getRole(emp, subSlot + 1);
+        var nextIsProtected = nextRole === 'BK' || nextRole === 'L';
+        if (nextRole !== null && !nextIsProtected) {
           emp.schedule[subSlot] = 'CK';
           emp.schedule[subSlot + 1] = 'CK';
+        } else {
+          // Next slot is off-shift, break, or lunch — only set this one
+          emp.schedule[subSlot] = 'CK';
         }
       } else {
         // Not enough room — just set this one
         emp.schedule[subSlot] = 'CK';
-      }
-    } else if (next === 'L') {
-      // Lunch = 4 sub-slots (1 hour)
-      let start = subSlot;
-      // Extend backward if possible to make a full block
-      while (start > emp.startSubSlot &&
-             getRole(emp, start - 1) !== null &&
-             subSlot - start < 3) {
-        start--;
-      }
-      // Fill up to 4 slots
-      for (let i = 0; i < 4; i++) {
-        const idx = start + i;
-        if (idx <= emp.endSubSlot && getRole(emp, idx) !== null) {
-          emp.schedule[idx] = 'L';
-        }
       }
     } else {
       emp.schedule[subSlot] = next;
