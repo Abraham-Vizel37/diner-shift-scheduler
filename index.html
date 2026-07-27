@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diner Shift Scheduler</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Diner Shift Scheduler</h1>
+    <div id="toolbar">
+      <button id="btn-add-employee" title="Add Employee">+ Employee</button>
+      <button id="btn-roster" title="Add from Roster">👥 Roster</button>
+      <button id="btn-callout-mode" title="Call-Out Mode">📞 Call-Out</button>
+      <button id="btn-validate" title="Validate Schedule">✓ Validate</button>
+      <button id="btn-show-list" title="View Daily List">📋 List</button>
+      <span class="separator">|</span>
+      <button id="btn-save" title="Save to Browser">💾 Save</button>
+      <button id="btn-load" title="Load from Browser">📂 Load</button>
+      <button id="btn-reset" title="Reset">🔄 Reset</button>
+      <span class="separator">|</span>
+      <button id="btn-auto-assign" title="Auto-Assign Schedule">🤖 Auto-Assign</button>
+    </div>
+  </header>
+
+  <div id="main-layout">
+    <div id="grid-container">
+      <div class="grid-scroll">
+        <div id="schedule-grid"></div>
+      </div>
+    </div>
+
+    <aside id="sidebar">
+      <div id="errors-panel" class="panel hidden">
+        <h2>⚠️ Errors</h2>
+        <ul id="errors-list"></ul>
+      </div>
+      <div id="list-panel" class="panel hidden">
+        <div id="cook-section">
+          <h2>Cook</h2>
+          <div id="cook-list"></div>
+        </div>
+        <div id="lunch-section">
+          <h2>Lunch</h2>
+          <div id="lunch-list"></div>
+        </div>
+        <div id="break-section">
+          <h2>15s</h2>
+          <div id="break-list"></div>
+        </div>
+        <button id="btn-print" class="print-btn">🖨️ Print</button>
+      </div>
+      <div id="callout-log-panel" class="panel hidden">
+        <h2>📞 Redistribution Log</h2>
+        <pre id="callout-log"></pre>
+        <button id="btn-accept-callout">✓ Accept</button>
+        <button id="btn-undo-callout">↩ Undo</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Employee Modal -->
+  <div id="employee-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-title">Add Employee</h2>
+      <label>Full Name <input type="text" id="emp-name" placeholder="e.g. Antonella F"></label>
+      <label>Nickname (for list) <input type="text" id="emp-nickname" placeholder="e.g. Ant"></label>
+      <label>Role Code <input type="text" id="emp-role" placeholder="e.g. Ba, LP" maxlength="4"></label>
+      <label>Start Time
+        <select id="emp-start-hour">
+          <option value="0">10:00 AM</option><option value="1">10:15 AM</option><option value="2">10:30 AM</option><option value="3">10:45 AM</option>
+          <option value="4">11:00 AM</option><option value="5">11:15 AM</option><option value="6">11:30 AM</option><option value="7">11:45 AM</option>
+          <option value="8">12:00 PM</option><option value="9">12:15 PM</option><option value="10">12:30 PM</option><option value="11">12:45 PM</option>
+          <option value="12">1:00 PM</option><option value="13">1:15 PM</option><option value="14">1:30 PM</option><option value="15">1:45 PM</option>
+          <option value="16">2:00 PM</option><option value="17">2:15 PM</option><option value="18">2:30 PM</option><option value="19">2:45 PM</option>
+          <option value="20">3:00 PM</option><option value="21">3:15 PM</option><option value="22">3:30 PM</option><option value="23">3:45 PM</option>
+          <option value="24">4:00 PM</option><option value="25">4:15 PM</option><option value="26">4:30 PM</option><option value="27">4:45 PM</option>
+          <option value="28">5:00 PM</option><option value="29">5:15 PM</option><option value="30">5:30 PM</option><option value="31">5:45 PM</option>
+          <option value="32">6:00 PM</option><option value="33">6:15 PM</option><option value="34">6:30 PM</option><option value="35">6:45 PM</option>
+          <option value="36">7:00 PM</option><option value="37">7:15 PM</option><option value="38">7:30 PM</option><option value="39">7:45 PM</option>
+          <option value="40">8:00 PM</option><option value="41">8:15 PM</option><option value="42">8:30 PM</option><option value="43">8:45 PM</option>
+        </select>
+      </label>
+      <label>End Time
+        <select id="emp-end-hour">
+          <option value="0">10:00 AM</option><option value="1">10:15 AM</option><option value="2">10:30 AM</option><option value="3">10:45 AM</option>
+          <option value="4">11:00 AM</option><option value="5">11:15 AM</option><option value="6">11:30 AM</option><option value="7">11:45 AM</option>
+          <option value="8">12:00 PM</option><option value="9">12:15 PM</option><option value="10">12:30 PM</option><option value="11">12:45 PM</option>
+          <option value="12">1:00 PM</option><option value="13">1:15 PM</option><option value="14">1:30 PM</option><option value="15">1:45 PM</option>
+          <option value="16">2:00 PM</option><option value="17">2:15 PM</option><option value="18">2:30 PM</option><option value="19">2:45 PM</option>
+          <option value="20">3:00 PM</option><option value="21">3:15 PM</option><option value="22">3:30 PM</option><option value="23">3:45 PM</option>
+          <option value="24">4:00 PM</option><option value="25">4:15 PM</option><option value="26">4:30 PM</option><option value="27">4:45 PM</option>
+          <option value="28">5:00 PM</option><option value="29">5:15 PM</option><option value="30">5:30 PM</option><option value="31">5:45 PM</option>
+          <option value="32">6:00 PM</option><option value="33">6:15 PM</option><option value="34">6:30 PM</option><option value="35">6:45 PM</option>
+          <option value="36">7:00 PM</option><option value="37">7:15 PM</option><option value="38">7:30 PM</option><option value="39">7:45 PM</option>
+          <option value="40">8:00 PM</option><option value="41">8:15 PM</option><option value="42">8:30 PM</option><option value="43">8:45 PM</option>
+        </select>
+      </label>
+      <label>Lunch Start Time
+        <select id="emp-lunch-hour">
+          <option value="">(auto)</option>
+          <option value="0">10:00 AM</option><option value="1">10:15 AM</option><option value="2">10:30 AM</option><option value="3">10:45 AM</option>
+          <option value="4">11:00 AM</option><option value="5">11:15 AM</option><option value="6">11:30 AM</option><option value="7">11:45 AM</option>
+          <option value="8">12:00 PM</option><option value="9">12:15 PM</option><option value="10">12:30 PM</option><option value="11">12:45 PM</option>
+          <option value="12">1:00 PM</option><option value="13">1:15 PM</option><option value="14">1:30 PM</option><option value="15">1:45 PM</option>
+          <option value="16">2:00 PM</option><option value="17">2:15 PM</option><option value="18">2:30 PM</option><option value="19">2:45 PM</option>
+          <option value="20">3:00 PM</option><option value="21">3:15 PM</option><option value="22">3:30 PM</option><option value="23">3:45 PM</option>
+          <option value="24">4:00 PM</option><option value="25">4:15 PM</option><option value="26">4:30 PM</option><option value="27">4:45 PM</option>
+          <option value="28">5:00 PM</option><option value="29">5:15 PM</option><option value="30">5:30 PM</option><option value="31">5:45 PM</option>
+          <option value="32">6:00 PM</option><option value="33">6:15 PM</option><option value="34">6:30 PM</option><option value="35">6:45 PM</option>
+        </select>
+      </label>
+      <label class="checkbox-label"><input type="checkbox" id="emp-can-cook" checked> Can Cook</label>
+      <div class="modal-actions">
+        <button id="btn-modal-save">Save</button>
+        <button id="btn-modal-delete" style="display:none; background:#cc0000; color:white;">Delete</button>
+        <button id="btn-modal-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roster Quick-Add Modal -->
+  <div id="roster-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Add from Roster</h2>
+      <p class="roster-hint">Check the employees you want to add to the schedule.</p>
+      <div id="roster-list"></div>
+      <div class="modal-actions">
+        <button id="btn-roster-add">Add Checked</button>
+        <button id="btn-roster-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div id="legend">
+    <span class="legend-item"><span class="swatch" style="background:#F5A623"></span> HST</span>
+    <span class="legend-item"><span class="swatch" style="background:#E85D75"></span> SRV</span>
+    <span class="legend-item"><span class="swatch" style="background:#4A90D9"></span> CK</span>
+    <span class="legend-item"><span class="swatch" style="background:#333"></span> BK</span>
+    <span class="legend-item"><span class="swatch" style="background:#888"></span> L</span>
+    <span class="legend-item" style="margin-left: 12px; opacity: 0.6; font-size:11px">Click to cycle · Right-click to clear</span>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/auto-engine.js?v=8"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/output.js"></script>
+  <script src="js/app.js?v=8"></script>
+</body>
+</html>

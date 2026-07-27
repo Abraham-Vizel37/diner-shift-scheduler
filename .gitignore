@@ -1,0 +1,17 @@
+# Internal Hermes agent files — never commit
+.hermes/
+
+# Internal project docs — not for public distribution
+AGENTS.md
+SECURITY_IMPLEMENTATION_REVIEW.md
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
