@@ -8,70 +8,209 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <h1>Diner Shift Scheduler</h1>
-    <div id="toolbar">
-      <button id="btn-add-employee" title="Add Employee">+ Employee</button>
-      <button id="btn-roster" title="Add from Roster">👥 Roster</button>
-      <button id="btn-callout-mode" title="Call-Out Mode">📞 Call-Out</button>
-      <button id="btn-validate" title="Validate Schedule">✓ Validate</button>
-      <button id="btn-show-list" title="View Daily List">📋 List</button>
-      <span class="separator">|</span>
-      <button id="btn-save" title="Save to Browser">💾 Save</button>
-      <button id="btn-load" title="Load from Browser">📂 Load</button>
-      <button id="btn-import" title="Import from CSV">📥 Import</button>
-      <button id="btn-export" title="Export to CSV">📤 Export</button>
-      <button id="btn-reset" title="Reset">🔄 Reset</button>
-      <span class="separator">|</span>
-      <button id="btn-auto-assign" title="Auto-Assign Schedule">🤖 Auto-Assign</button>
-      <span class="separator">|</span>
-      <button id="btn-help" title="Need Help?" onclick="window.open('https://docs.google.com/document/d/1aX4oIKwVGf641Gk1hAhiItgmzbNunMs3N0m7-lG5UJs/edit?usp=sharing','_blank')">❓ Need Help?</button>
-      <!-- Off-screen anchor for mobile-friendly CSV download (display:none blocks clicks on mobile) -->
-      <a id="export-anchor" download="diner-employees.csv" style="position:absolute;left:-9999px;top:0"></a>
-    </div>
-  </header>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- CONTROL PANEL MODE — original toolbar + grid + sidebar          -->
+  <!-- Hidden when body.app-mode is active                             -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div id="panel-mode">
+    <header>
+      <h1>Diner Shift Scheduler</h1>
+      <div id="toolbar">
+        <button id="btn-add-employee" title="Add Employee">+ Employee</button>
+        <button id="btn-roster" title="Add from Roster">👥 Roster</button>
+        <button id="btn-callout-mode" title="Call-Out Mode">📞 Call-Out</button>
+        <button id="btn-validate" title="Validate Schedule">✓ Validate</button>
+        <button id="btn-show-list" title="View Daily List">📋 List</button>
+        <span class="separator">|</span>
+        <button id="btn-save" title="Save to Browser">💾 Save</button>
+        <button id="btn-load" title="Load from Browser">📂 Load</button>
+        <button id="btn-import" title="Import from CSV">📥 Import</button>
+        <button id="btn-export" title="Export to CSV">📤 Export</button>
+        <button id="btn-reset" title="Reset">🔄 Reset</button>
+        <span class="separator">|</span>
+        <button id="btn-auto-assign" title="Auto-Assign Schedule">🤖 Auto-Assign</button>
+        <span class="separator">|</span>
+        <button id="btn-help" title="Need Help?" onclick="window.open('https://docs.google.com/document/d/1aX4oIKwVGf641Gk1hAhiItgmzbNunMs3N0m7-lG5UJs/edit?usp=sharing','_blank')">❓ Need Help?</button>
+        <span class="separator">|</span>
+        <button id="btn-mode-toggle" title="Switch to App Mode" class="mode-toggle">📱 App</button>
+        <a id="export-anchor" download="diner-employees.csv" style="position:absolute;left:-9999px;top:0"></a>
+      </div>
+    </header>
 
-  <div id="main-layout">
-    <div id="grid-container">
-      <div class="grid-scroll">
-        <div id="schedule-grid"></div>
+    <div id="main-layout">
+      <div id="grid-container">
+        <div class="grid-scroll">
+          <div id="schedule-grid"></div>
+        </div>
       </div>
+
+      <aside id="sidebar">
+        <div id="errors-panel" class="panel hidden">
+          <h2>⚠️ Errors</h2>
+          <ul id="errors-list"></ul>
+        </div>
+        <div id="list-panel" class="panel hidden">
+          <div class="list-header">
+            <h2>📋 Daily List</h2>
+            <button id="btn-copy-list" title="Copy list to clipboard" class="copy-btn">📋 Copy</button>
+          </div>
+          <div id="cook-section"><h2>Cook</h2><div id="cook-list"></div></div>
+          <div id="lunch-section"><h2>Lunch</h2><div id="lunch-list"></div></div>
+          <div id="break-section"><h2>15s</h2><div id="break-list"></div></div>
+          <button id="btn-print" class="print-btn">🖨️ Print</button>
+        </div>
+        <div id="callout-log-panel" class="panel hidden">
+          <h2>📞 Redistribution Log</h2>
+          <pre id="callout-log"></pre>
+          <button id="btn-accept-callout">✓ Accept</button>
+          <button id="btn-undo-callout">↩ Undo</button>
+        </div>
+      </aside>
     </div>
 
-    <aside id="sidebar">
-      <div id="errors-panel" class="panel hidden">
-        <h2>⚠️ Errors</h2>
-        <ul id="errors-list"></ul>
-      </div>
-      <div id="list-panel" class="panel hidden">
-        <div class="list-header">
-          <h2>📋 Daily List</h2>
-          <button id="btn-copy-list" title="Copy list to clipboard" class="copy-btn">📋 Copy</button>
-        </div>
-        <div id="cook-section">
-          <h2>Cook</h2>
-          <div id="cook-list"></div>
-        </div>
-        <div id="lunch-section">
-          <h2>Lunch</h2>
-          <div id="lunch-list"></div>
-        </div>
-        <div id="break-section">
-          <h2>15s</h2>
-          <div id="break-list"></div>
-        </div>
-        <button id="btn-print" class="print-btn">🖨️ Print</button>
-      </div>
-      <div id="callout-log-panel" class="panel hidden">
-        <h2>📞 Redistribution Log</h2>
-        <pre id="callout-log"></pre>
-        <button id="btn-accept-callout">✓ Accept</button>
-        <button id="btn-undo-callout">↩ Undo</button>
-      </div>
-    </aside>
+    <!-- Legend -->
+    <div id="legend">
+      <span class="legend-item"><span class="swatch" style="background:#F5A623"></span> HST</span>
+      <span class="legend-item"><span class="swatch" style="background:#E85D75"></span> SRV</span>
+      <span class="legend-item"><span class="swatch" style="background:#4A90D9"></span> CK</span>
+      <span class="legend-item"><span class="swatch" style="background:#333"></span> BK</span>
+      <span class="legend-item"><span class="swatch" style="background:#888"></span> L</span>
+      <span class="legend-item" style="margin-left:12px;opacity:0.6;font-size:11px">Click to cycle · Right-click to clear</span>
+    </div>
   </div>
+  <!-- END PANEL MODE -->
 
-  <!-- Employee Modal -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- APP MODE — shown when body.app-mode is active                    -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div id="app-shell" style="display:none">
+
+    <!-- Landing Screen -->
+    <div id="app-screen-landing" class="app-screen active">
+      <div class="app-landing-header">
+        <h1>Diner Shift<br>Scheduler</h1>
+        <p class="app-subtitle">Build today's schedule in minutes</p>
+      </div>
+      <div class="app-card-grid">
+        <div class="app-card" data-screen="schedule">
+          <span class="app-card-icon">📋</span>
+          <span class="app-card-label">Today's Schedule</span>
+          <span class="app-card-desc">Grid + roster list</span>
+        </div>
+        <div class="app-card" data-screen="employees">
+          <span class="app-card-icon">👥</span>
+          <span class="app-card-label">Employees</span>
+          <span class="app-card-desc">Add, edit, or remove</span>
+        </div>
+        <div class="app-card" data-screen="import-export">
+          <span class="app-card-icon">📂</span>
+          <span class="app-card-label">Import / Export</span>
+          <span class="app-card-desc">CSV backup & restore</span>
+        </div>
+        <div class="app-card" data-screen="help">
+          <span class="app-card-icon">❓</span>
+          <span class="app-card-label">Help</span>
+          <span class="app-card-desc">User guide</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule Screen -->
+    <div id="app-screen-schedule" class="app-screen">
+      <div class="app-screen-header">
+        <button class="app-back-btn" data-target="landing">← Back</button>
+        <h2>Schedule</h2>
+      </div>
+      <div class="app-schedule-content">
+        <div class="app-grid-wrapper">
+          <div id="app-schedule-grid"></div>
+        </div>
+        <div class="app-list-wrapper">
+          <div class="app-list-header">
+            <span>📋 Daily List</span>
+            <button id="app-btn-copy-list" class="app-btn-sm">📋 Copy</button>
+          </div>
+          <div id="app-cook-list" class="app-list-section"></div>
+          <div id="app-lunch-list" class="app-list-section"></div>
+          <div id="app-break-list" class="app-list-section"></div>
+        </div>
+      </div>
+      <div class="app-action-bar">
+        <button id="app-btn-auto-assign">🤖 Auto</button>
+        <button id="app-btn-validate">✓ Validate</button>
+        <button id="app-btn-save">💾 Save</button>
+        <button id="app-btn-export" class="app-btn-export-inline">📤 Export</button>
+      </div>
+    </div>
+
+    <!-- Employees Screen -->
+    <div id="app-screen-employees" class="app-screen">
+      <div class="app-screen-header">
+        <button class="app-back-btn" data-target="landing">← Back</button>
+        <h2>Employees</h2>
+      </div>
+      <div class="app-employee-actions">
+        <button class="app-btn-primary" id="app-btn-add-employee">+ Add Employee</button>
+        <button class="app-btn-secondary" id="app-btn-open-roster">👥 From Roster</button>
+      </div>
+      <div id="app-employee-list" class="app-employee-list"></div>
+    </div>
+
+    <!-- Import/Export Screen -->
+    <div id="app-screen-import-export" class="app-screen">
+      <div class="app-screen-header">
+        <button class="app-back-btn" data-target="landing">← Back</button>
+        <h2>Import / Export</h2>
+      </div>
+      <div class="app-io-cards">
+        <div class="app-io-card" id="app-btn-import-csv">
+          <span class="app-card-icon">📥</span>
+          <span class="app-card-label">Import CSV</span>
+          <span class="app-card-desc">Load employees from a file</span>
+        </div>
+        <div class="app-io-card" id="app-btn-export-csv">
+          <span class="app-card-icon">📤</span>
+          <span class="app-card-label">Export CSV</span>
+          <span class="app-card-desc">Download diner-employees.csv</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help Screen -->
+    <div id="app-screen-help" class="app-screen">
+      <div class="app-screen-header">
+        <button class="app-back-btn" data-target="landing">← Back</button>
+        <h2>Help</h2>
+      </div>
+      <div class="app-help-content">
+        <p>Open the full user guide for instructions on using the Diner Shift Scheduler.</p>
+        <button class="app-btn-primary" onclick="window.open('https://docs.google.com/document/d/1aX4oIKwVGf641Gk1hAhiItgmzbNunMs3N0m7-lG5UJs/edit?usp=sharing','_blank')">📖 Open User Guide</button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="app-bottom-nav">
+      <button class="app-nav-item active" data-screen="landing">
+        <span class="app-nav-icon">🏠</span>
+        <span class="app-nav-label">Home</span>
+      </button>
+      <button class="app-nav-item" data-screen="schedule">
+        <span class="app-nav-icon">📋</span>
+        <span class="app-nav-label">Schedule</span>
+      </button>
+      <button class="app-nav-item" data-screen="employees">
+        <span class="app-nav-icon">👥</span>
+        <span class="app-nav-label">Staff</span>
+      </button>
+      <button class="app-nav-item" data-screen="import-export">
+        <span class="app-nav-icon">📂</span>
+        <span class="app-nav-label">Files</span>
+      </button>
+    </nav>
+  </div>
+  <!-- END APP MODE -->
+
+  <!-- Shared Modals (used by both modes) -->
   <div id="employee-modal" class="modal hidden">
     <div class="modal-content">
       <h2 id="modal-title">Add Employee</h2>
@@ -144,7 +283,7 @@
 
       <div class="modal-actions">
         <button id="btn-modal-save">Save</button>
-        <button id="btn-modal-delete" style="display:none; background:#cc0000; color:white;">Delete</button>
+        <button id="btn-modal-delete" style="display:none;background:#cc0000;color:#fff;">Delete</button>
         <button id="btn-modal-cancel">Cancel</button>
       </div>
     </div>
@@ -163,20 +302,10 @@
     </div>
   </div>
 
-  <!-- Legend -->
-  <div id="legend">
-    <span class="legend-item"><span class="swatch" style="background:#F5A623"></span> HST</span>
-    <span class="legend-item"><span class="swatch" style="background:#E85D75"></span> SRV</span>
-    <span class="legend-item"><span class="swatch" style="background:#4A90D9"></span> CK</span>
-    <span class="legend-item"><span class="swatch" style="background:#333"></span> BK</span>
-    <span class="legend-item"><span class="swatch" style="background:#888"></span> L</span>
-    <span class="legend-item" style="margin-left: 12px; opacity: 0.6; font-size:11px">Click to cycle · Right-click to clear</span>
-  </div>
-
   <script src="js/engine.js?v=2"></script>
   <script src="js/auto-engine.js?v=10"></script>
   <script src="js/grid.js"></script>
   <script src="js/output.js"></script>
-  <script src="js/app.js?v=16"></script>
+  <script src="js/app.js?v=17"></script>
 </body>
 </html>

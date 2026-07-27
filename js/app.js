@@ -1302,3 +1302,132 @@ const App = {
 // ─── Bootstrap ────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
+// ═══════════════════════════════════════════════════════════════════
+// MODE TOGGLE — Panel ↔ App
+// ═══════════════════════════════════════════════════════════════════
+
+(function() {
+  var MODE_KEY = 'diner-app-mode';
+
+  function applyMode(mode) {
+    var body = document.body;
+    var toggle = document.getElementById('btn-mode-toggle');
+    if (!toggle) return;
+    if (mode === 'app') {
+      body.classList.add('app-mode');
+      toggle.textContent = '\uD83D\uDDA5\uFE0F Panel';
+      toggle.title = 'Switch to Control Panel Mode';
+      if (typeof App !== 'undefined' && App.employees) syncAppSchedule();
+    } else {
+      body.classList.remove('app-mode');
+      toggle.textContent = '\uD83D\uDCF1 App';
+      toggle.title = 'Switch to App Mode';
+    }
+    try { localStorage.setItem(MODE_KEY, mode); } catch(e) {}
+  }
+
+  function toggleMode() {
+    var current = document.body.classList.contains('app-mode') ? 'app' : 'panel';
+    applyMode(current === 'app' ? 'panel' : 'app');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var saved;
+    try { saved = localStorage.getItem(MODE_KEY); } catch(e) {}
+    applyMode(saved === 'app' ? 'app' : 'panel');
+    var toggle = document.getElementById('btn-mode-toggle');
+    if (toggle) toggle.addEventListener('click', toggleMode);
+    initAppNavigation();
+  });
+
+  window._applyMode = applyMode;
+  window._toggleMode = toggleMode;
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// APP MODE NAVIGATION
+// ═══════════════════════════════════════════════════════════════════
+
+function initAppNavigation() {
+  document.querySelectorAll('.app-card[data-screen]').forEach(function(card) {
+    card.addEventListener('click', function() { navigateTo(this.dataset.screen); });
+  });
+  document.querySelectorAll('.app-back-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { navigateTo(this.dataset.target || 'landing'); });
+  });
+  document.querySelectorAll('.app-nav-item').forEach(function(item) {
+    item.addEventListener('click', function() { navigateTo(this.dataset.screen); });
+  });
+
+  var bind = function(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+  bind('app-btn-auto-assign', function() { if (typeof App !== 'undefined') App._autoAssign(); });
+  bind('app-btn-validate', function() { if (typeof App !== 'undefined') App._validate(); });
+  bind('app-btn-save', function() { if (typeof App !== 'undefined') App._save(); });
+  bind('app-btn-export', function() { if (typeof App !== 'undefined') App._exportCSV(); });
+  bind('app-btn-copy-list', function() { if (typeof App !== 'undefined') App._copyListToClipboard(); });
+  bind('app-btn-add-employee', function() { if (typeof App !== 'undefined') App._openEmployeeModal(null); });
+  bind('app-btn-open-roster', function() { if (typeof App !== 'undefined') App._openRosterModal(); });
+  bind('app-btn-import-csv', function() { if (typeof App !== 'undefined') App._importCSV(); });
+  bind('app-btn-export-csv', function() { if (typeof App !== 'undefined') App._exportCSV(); });
+}
+
+function navigateTo(screen) {
+  document.querySelectorAll('.app-screen').forEach(function(s) { s.classList.remove('active'); });
+  var target = document.getElementById('app-screen-' + screen);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.app-nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var navItem = document.querySelector('.app-nav-item[data-screen="' + screen + '"]');
+  if (navItem) navItem.classList.add('active');
+  if (screen === 'schedule') syncAppSchedule();
+  if (screen === 'employees') renderAppEmployeeList();
+}
+
+function syncAppSchedule() {
+  if (typeof App === 'undefined' || !App.employees) return;
+  var appGrid = document.getElementById('app-schedule-grid');
+  if (appGrid && typeof Grid !== 'undefined') Grid.render(appGrid, App.employees);
+  if (typeof Output === 'undefined') return;
+  Output.render(App.employees);
+  var mirror = function(srcId, dstId) {
+    var src = document.getElementById(srcId), dst = document.getElementById(dstId);
+    if (src && dst) dst.innerHTML = src.innerHTML;
+  };
+  mirror('cook-list', 'app-cook-list');
+  mirror('lunch-list', 'app-lunch-list');
+  mirror('break-list', 'app-break-list');
+}
+
+function renderAppEmployeeList() {
+  if (typeof App === 'undefined' || !App.employees) return;
+  var list = document.getElementById('app-employee-list');
+  if (!list) return;
+  list.innerHTML = '';
+  App.employees.forEach(function(emp) {
+    var item = document.createElement('div');
+    item.className = 'app-emp-item';
+    var info = document.createElement('div');
+    var times = '';
+    if (typeof subSlotToClockTime !== 'undefined') {
+      times = subSlotToClockTime(emp.startSubSlot) + '-' + subSlotToClockTime(emp.endSubSlot);
+    }
+    info.innerHTML = '<div class="app-emp-item-name">' + emp.nickname + '</div>' +
+      '<div class="app-emp-item-detail">' + emp.name + ' &middot; ' + times + '</div>';
+    item.appendChild(info);
+    item.addEventListener('click', function() { App._openEmployeeModal(emp); });
+    var del = document.createElement('button');
+    del.className = 'app-emp-item-del';
+    del.textContent = '\u00D7';
+    del.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (confirm('Remove ' + emp.nickname + '?')) {
+        App.employees = App.employees.filter(function(e) { return e.id !== emp.id; });
+        App._autoSave();
+        renderAppEmployeeList();
+        syncAppSchedule();
+      }
+    });
+    item.appendChild(del);
+    list.appendChild(item);
+  });
+}
