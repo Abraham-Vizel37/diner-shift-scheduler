@@ -1475,7 +1475,16 @@ function syncAppSchedule() {
   Output.render(App.employees);
   var mirror = function(srcId, dstId) {
     var src = document.getElementById(srcId), dst = document.getElementById(dstId);
-    if (src && dst) dst.innerHTML = src.innerHTML;
+    if (!src || !dst) return;
+    // Preserve the label div (first child), replace everything after it
+    var label = dst.querySelector('.app-list-section-label');
+    dst.innerHTML = '';
+    if (label) dst.appendChild(label);
+    // Clone the source content rows into the destination
+    var children = src.children;
+    for (var i = 0; i < children.length; i++) {
+      dst.appendChild(children[i].cloneNode(true));
+    }
   };
   mirror('cook-list', 'app-cook-list');
   mirror('lunch-list', 'app-lunch-list');
