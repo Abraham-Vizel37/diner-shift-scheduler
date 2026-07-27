@@ -26,16 +26,18 @@ const Output = {
       const row = document.createElement('div');
       row.className = 'cook-row';
 
-      const timeSpan = document.createElement('span');
-      timeSpan.className = 'time';
-      timeSpan.textContent = entry.time;
-
       const nameSpan = document.createElement('span');
       nameSpan.className = 'name';
       nameSpan.textContent = entry.name;
 
-      row.appendChild(timeSpan);
       row.appendChild(nameSpan);
+      row.appendChild(document.createTextNode(' '));
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'time';
+      timeSpan.textContent = entry.time;
+
+      row.appendChild(timeSpan);
       frag.appendChild(row);
     }
 

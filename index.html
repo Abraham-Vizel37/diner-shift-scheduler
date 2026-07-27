@@ -19,9 +19,15 @@
       <span class="separator">|</span>
       <button id="btn-save" title="Save to Browser">💾 Save</button>
       <button id="btn-load" title="Load from Browser">📂 Load</button>
+      <button id="btn-import" title="Import from CSV">📥 Import</button>
+      <button id="btn-export" title="Export to CSV">📤 Export</button>
       <button id="btn-reset" title="Reset">🔄 Reset</button>
       <span class="separator">|</span>
       <button id="btn-auto-assign" title="Auto-Assign Schedule">🤖 Auto-Assign</button>
+      <span class="separator">|</span>
+      <button id="btn-help" title="Need Help?" onclick="window.open('https://docs.google.com/document/d/1WANncLOW0aM1n7jazeSmFZkaD1fqUo5sA6bK8AbswPA/edit?usp=sharing','_blank')">❓ Need Help?</button>
+      <!-- Off-screen anchor for mobile-friendly CSV download (display:none blocks clicks on mobile) -->
+      <a id="export-anchor" download="diner-employees.csv" style="position:absolute;left:-9999px;top:0"></a>
     </div>
   </header>
 
@@ -38,6 +44,10 @@
         <ul id="errors-list"></ul>
       </div>
       <div id="list-panel" class="panel hidden">
+        <div class="list-header">
+          <h2>📋 Daily List</h2>
+          <button id="btn-copy-list" title="Copy list to clipboard" class="copy-btn">📋 Copy</button>
+        </div>
         <div id="cook-section">
           <h2>Cook</h2>
           <div id="cook-list"></div>
@@ -113,6 +123,25 @@
         </select>
       </label>
       <label class="checkbox-label"><input type="checkbox" id="emp-can-cook" checked> Can Cook</label>
+
+      <!-- Time Profile Section -->
+      <div class="time-profile-section">
+        <button type="button" id="btn-toggle-profiles" class="profile-toggle-btn">⏱ Time Profiles ▾</button>
+        <div id="time-profile-panel" class="profile-panel hidden">
+          <div class="profile-list-header">Saved Profiles</div>
+          <div id="profile-list" class="profile-list"></div>
+          <div class="profile-divider"></div>
+          <div class="profile-save-section">
+            <div class="profile-save-label">Save current times as a new profile:</div>
+            <div class="profile-save-row">
+              <input type="text" id="profile-save-name" placeholder="e.g. Opening Shift" maxlength="40">
+              <button type="button" id="btn-save-profile" class="btn-sm">💾 Save</button>
+            </div>
+            <div id="profile-save-msg" class="profile-msg hidden"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button id="btn-modal-save">Save</button>
         <button id="btn-modal-delete" style="display:none; background:#cc0000; color:white;">Delete</button>
@@ -145,9 +174,9 @@
   </div>
 
   <script src="js/engine.js"></script>
-  <script src="js/auto-engine.js?v=8"></script>
+  <script src="js/auto-engine.js?v=10"></script>
   <script src="js/grid.js"></script>
   <script src="js/output.js"></script>
-  <script src="js/app.js?v=8"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>

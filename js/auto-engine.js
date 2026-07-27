@@ -175,11 +175,13 @@ var AutoEngine = (function() {
       placePostLunchBreaks(employee, lunchEnd, postLunchSlots, 2);
     } else {
       // R12: 1 break before + 1 break after lunch
-      // Pre-lunch break at midpoint of pre-lunch zone
-      var preMid = employee.startSubSlot + Math.floor(preLunchSlots / 2);
-      placeBreakAt(employee, preMid, warnings);
+      // Pre-lunch: split into W1 + B1 + W2 (≈equal, W2 gets extra if odd)
+      var preWork = preLunchSlots - 1; // break takes 1 slot
+      var w1 = Math.floor(preWork / 2);
+      var w2 = Math.ceil(preWork / 2);
+      placeBreakAt(employee, employee.startSubSlot + w1, warnings);
 
-      // Post-lunch break
+      // Post-lunch: split into W3 + B2 + W4 (≈equal, W3 gets extra if odd)
       placePostLunchBreaks(employee, lunchEnd, postLunchSlots, 1);
     }
     return warnings;
@@ -214,7 +216,7 @@ var AutoEngine = (function() {
     // -1 slot: last segment is shortest
 
     if (count === 2) {
-      var bk1Pos = lunchEnd + segSize;           // after segment 1
+      var bk1Pos = lunchEnd + Math.max(1, segSize); // after working segment 1 (≥1 slot from lunch)
       var bk2Pos = bk1Pos + 1 + segSize + remainder; // after segment 2 (with remainder added to center)
       // Clamp
       if (bk1Pos < employee.endSubSlot) {
@@ -224,8 +226,10 @@ var AutoEngine = (function() {
         placeBreakAt(employee, bk2Pos, warnings);
       }
     } else if (count === 1) {
-      var midPos = lunchEnd + Math.floor(postLunchSlots / 2);
-      placeBreakAt(employee, midPos, warnings);
+      // Split post-lunch into W3 + B2 + W4 (W3 gets extra, adjacent to lunch)
+      var postWork = postLunchSlots - 1; // break takes 1 slot
+      var w3 = Math.ceil(postWork / 2);
+      placeBreakAt(employee, lunchEnd + w3, warnings);
     }
 
     return warnings;
