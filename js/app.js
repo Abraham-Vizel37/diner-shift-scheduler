@@ -174,6 +174,11 @@ const App = {
     Grid.render(document.getElementById('schedule-grid'), this.employees);
     this._updateOutput();
     this._autoSave();
+
+    // Sync app-mode grid if active
+    if (document.body.classList.contains('app-mode') && typeof syncAppSchedule === 'function') {
+      syncAppSchedule();
+    }
   },
 
   _handleNameClick(empId) {
