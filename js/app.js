@@ -1370,6 +1370,28 @@ function initAppNavigation() {
   bind('app-btn-open-roster', function() { if (typeof App !== 'undefined') App._openRosterModal(); });
   bind('app-btn-import-csv', function() { if (typeof App !== 'undefined') App._importCSV(); });
   bind('app-btn-export-csv', function() { if (typeof App !== 'undefined') App._exportCSV(); });
+
+  // Edit toggle on schedule screen
+  bind('app-btn-edit-toggle', function() {
+    var wrapper = document.querySelector('.app-grid-wrapper');
+    var btn = document.getElementById('app-btn-edit-toggle');
+    if (!wrapper || !btn) return;
+    var editing = wrapper.classList.contains('editing');
+    if (editing) {
+      wrapper.classList.remove('editing');
+      btn.classList.remove('active');
+      btn.textContent = '\u270F\uFE0F Edit';
+    } else {
+      wrapper.classList.add('editing');
+      btn.classList.add('active');
+      btn.textContent = '\u2705 Editing';
+    }
+  });
+
+  // Landing page: switch to Control Panel
+  bind('app-btn-switch-panel', function() {
+    if (typeof _toggleMode === 'function') _toggleMode();
+  });
 }
 
 function navigateTo(screen) {
@@ -1431,26 +1453,3 @@ function renderAppEmployeeList() {
     list.appendChild(item);
   });
 }
-
-// ─── App Edit Toggle ──────────────────────────────────────────────
-
-(function() {
-  document.addEventListener('DOMContentLoaded', function() {
-    var btn = document.getElementById('app-btn-edit-toggle');
-    if (!btn) return;
-
-    btn.addEventListener('click', function() {
-      var wrapper = document.querySelector('.app-grid-wrapper');
-      var isEditing = wrapper && wrapper.classList.contains('editing');
-      if (isEditing) {
-        if (wrapper) wrapper.classList.remove('editing');
-        btn.classList.remove('active');
-        btn.textContent = '\u270F\uFE0F Edit';
-      } else {
-        if (wrapper) wrapper.classList.add('editing');
-        btn.classList.add('active');
-        btn.textContent = '\u2705 Editing';
-      }
-    });
-  });
-})();
