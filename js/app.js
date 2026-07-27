@@ -1431,3 +1431,26 @@ function renderAppEmployeeList() {
     list.appendChild(item);
   });
 }
+
+// ─── App Edit Toggle ──────────────────────────────────────────────
+
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('app-btn-edit-toggle');
+    if (!btn) return;
+
+    btn.addEventListener('click', function() {
+      var wrapper = document.querySelector('.app-grid-wrapper');
+      var isEditing = wrapper && wrapper.classList.contains('editing');
+      if (isEditing) {
+        if (wrapper) wrapper.classList.remove('editing');
+        btn.classList.remove('active');
+        btn.textContent = '\u270F\uFE0F Edit';
+      } else {
+        if (wrapper) wrapper.classList.add('editing');
+        btn.classList.add('active');
+        btn.textContent = '\u2705 Editing';
+      }
+    });
+  });
+})();

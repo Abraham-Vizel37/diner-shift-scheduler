@@ -778,3 +778,29 @@ body.app-mode #app-shell { display: flex !important; flex-direction: column; min
 body.app-mode #app-schedule-grid table { font-size: 9px; }
 body.app-mode #app-schedule-grid .name-cell { min-width: 60px; font-size: 10px; }
 body.app-mode #app-schedule-grid .grid-cell { width: 18px; height: 22px; font-size: 7px; }
+
+/* ─── App edit toggle ─────────────────────────────────────────────── */
+.app-edit-toggle {
+  margin-left: auto;
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.app-edit-toggle.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Read-only grid in app mode (editing disabled) */
+.app-grid-wrapper:not(.editing) .grid-cell {
+  pointer-events: none;
+}
+.app-grid-wrapper:not(.editing) .name-cell {
+  pointer-events: none;
+}
