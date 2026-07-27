@@ -141,6 +141,9 @@ const App = {
     const role = getRole(emp, subSlot);
     if (role === null) return; // off-shift
 
+    // Lunch is static — only changeable via employee edit, not by tapping
+    if (role === 'L') return;
+
     // Click-to-cycle: HST → SRV → CK → BK → L → HST
     const next = ROLE_CYCLE_ORDER[(ROLE_CYCLE_ORDER.indexOf(role) + 1) % ROLE_CYCLE_ORDER.length];
 
