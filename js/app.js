@@ -1338,7 +1338,6 @@ document.addEventListener('DOMContentLoaded', () => App.init());
     applyMode(saved === 'app' ? 'app' : 'panel');
     var toggle = document.getElementById('btn-mode-toggle');
     if (toggle) toggle.addEventListener('click', toggleMode);
-    initAppNavigation();
   });
 
   window._applyMode = applyMode;
@@ -1346,35 +1345,95 @@ document.addEventListener('DOMContentLoaded', () => App.init());
 })();
 
 // ═══════════════════════════════════════════════════════════════════
-// APP MODE NAVIGATION
+// APP MODE — Event Delegation (single listener, always fires)
 // ═══════════════════════════════════════════════════════════════════
 
-function initAppNavigation() {
-  document.querySelectorAll('.app-card[data-screen]').forEach(function(card) {
-    card.addEventListener('click', function() { navigateTo(this.dataset.screen); });
-  });
-  document.querySelectorAll('.app-back-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { navigateTo(this.dataset.target || 'landing'); });
-  });
-  document.querySelectorAll('.app-nav-item').forEach(function(item) {
-    item.addEventListener('click', function() { navigateTo(this.dataset.screen); });
+(function() {
+  var shell = document.getElementById('app-shell');
+  if (!shell) return;
+
+  shell.addEventListener('click', function(e) {
+    var target = e.target;
+
+    // Walk up to find a button or card with a data attribute
+    var el = target;
+    while (el && el !== shell) {
+      // Cards with data-screen
+      if (el.dataset && el.dataset.screen && (el.classList.contains('app-card') || el.classList.contains('app-nav-item'))) {
+        navigateTo(el.dataset.screen);
+        return;
+      }
+      // Back buttons
+      if (el.classList.contains('app-back-btn')) {
+        navigateTo(el.dataset.target || 'landing');
+        return;
+      }
+      // Buttons by ID
+      if (el.id) {
+        var handled = handleAppButton(el.id, el);
+        if (handled) return;
+      }
+      el = el.parentElement;
+    }
   });
 
-  var bind = function(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
-  bind('app-btn-auto-assign', function() { if (typeof App !== 'undefined') App._autoAssign(); });
-  bind('app-btn-validate', function() { if (typeof App !== 'undefined') App._validate(); });
-  bind('app-btn-save', function() { if (typeof App !== 'undefined') App._save(); });
-  bind('app-btn-export', function() { if (typeof App !== 'undefined') App._exportCSV(); });
-  bind('app-btn-copy-list', function() { if (typeof App !== 'undefined') App._copyListToClipboard(); });
-  bind('app-btn-add-employee', function() { if (typeof App !== 'undefined') App._openEmployeeModal(null); });
-  bind('app-btn-open-roster', function() { if (typeof App !== 'undefined') App._openRosterModal(); });
-  bind('app-btn-import-csv', function() { if (typeof App !== 'undefined') App._importCSV(); });
-  bind('app-btn-export-csv', function() { if (typeof App !== 'undefined') App._exportCSV(); });
+  function handleAppButton(id, btn) {
+    var flash = function(msg) {
+      if (!btn) return;
+      var orig = btn.textContent;
+      btn.textContent = msg;
+      btn.style.transition = 'none';
+      btn.style.transform = 'scale(0.95)';
+      setTimeout(function() {
+        btn.textContent = orig;
+        btn.style.transform = '';
+      }, 300);
+    };
 
-  // Edit toggle on schedule screen
-  bind('app-btn-edit-toggle', function() {
+    switch (id) {
+      case 'app-btn-auto-assign':
+        if (typeof App !== 'undefined') {
+          App._autoAssign();
+          setTimeout(function() { syncAppSchedule(); }, 200);
+          flash('\u2705 Done');
+        }
+        return true;
+      case 'app-btn-validate':
+        if (typeof App !== 'undefined') { App._validate(); flash('\u2705 Checked'); }
+        return true;
+      case 'app-btn-save':
+        if (typeof App !== 'undefined') { App._save(); flash('\u2705 Saved'); }
+        return true;
+      case 'app-btn-export':
+        if (typeof App !== 'undefined') { App._exportCSV(); flash('\u2705 Downloaded'); }
+        return true;
+      case 'app-btn-copy-list':
+        if (typeof App !== 'undefined') { App._copyListToClipboard(); flash('\u2705 Copied'); }
+        return true;
+      case 'app-btn-add-employee':
+        if (typeof App !== 'undefined') App._openEmployeeModal(null);
+        return true;
+      case 'app-btn-open-roster':
+        if (typeof App !== 'undefined') App._openRosterModal();
+        return true;
+      case 'app-btn-import-csv':
+        if (typeof App !== 'undefined') App._importCSV();
+        return true;
+      case 'app-btn-export-csv':
+        if (typeof App !== 'undefined') App._exportCSV();
+        return true;
+      case 'app-btn-edit-toggle':
+        toggleAppEdit(btn);
+        return true;
+      case 'app-btn-switch-panel':
+        if (typeof _toggleMode === 'function') _toggleMode();
+        return true;
+    }
+    return false;
+  }
+
+  function toggleAppEdit(btn) {
     var wrapper = document.querySelector('.app-grid-wrapper');
-    var btn = document.getElementById('app-btn-edit-toggle');
     if (!wrapper || !btn) return;
     var editing = wrapper.classList.contains('editing');
     if (editing) {
@@ -1386,13 +1445,11 @@ function initAppNavigation() {
       btn.classList.add('active');
       btn.textContent = '\u2705 Editing';
     }
-  });
-
-  // Landing page: switch to Control Panel
-  bind('app-btn-switch-panel', function() {
-    if (typeof _toggleMode === 'function') _toggleMode();
-  });
-}
+    // Brief visual pulse
+    btn.style.transform = 'scale(0.9)';
+    setTimeout(function() { btn.style.transform = ''; }, 150);
+  }
+})();
 
 function navigateTo(screen) {
   document.querySelectorAll('.app-screen').forEach(function(s) { s.classList.remove('active'); });
