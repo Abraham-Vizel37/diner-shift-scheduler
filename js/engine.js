@@ -21,7 +21,7 @@ const ROLES = {
   L:   { code: 'L',   label: 'Lunch', color: '#888888', subSlots: 4 },
 };
 
-const ROLE_CYCLE_ORDER = ['HST', 'SRV', 'CK', 'BK', 'L'];
+const ROLE_CYCLE_ORDER = ['HST', 'SRV', 'CK', 'BK'];
 const ROLE_COLORS = {
   HST: '#F5A623',
   SRV: '#E85D75',
