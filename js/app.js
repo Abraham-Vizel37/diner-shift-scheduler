@@ -14,17 +14,17 @@ const App = {
   // ─── Preset Roster ──────────────────────────────────────────────
 
   ROSTER: [
-    { name: 'Manager', nickname: 'Manager', roleCode: 'LP', isChef: false, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 8 },
-    { name: 'Rikki J', nickname: 'Rikki', roleCode: 'Ba', isChef: true, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 12 },
-    { name: 'Eden O', nickname: 'Eden', roleCode: 'Ba', isChef: true, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 12 },
-    { name: 'Antonella F', nickname: 'Ant', roleCode: 'LP', isChef: true, startSubSlot: 0, endSubSlot: 31, lunchStartSubSlot: 12 },
-    { name: 'Margarita D', nickname: 'Marc', roleCode: 'LP', isChef: true, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 16 },
-    { name: 'Hilary B', nickname: 'Hilary', roleCode: '', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 24 },
-    { name: 'Joshua I', nickname: 'Josh', roleCode: '', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 24 },
-    { name: 'Londyn M', nickname: 'Maddy', roleCode: '', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 28 },
-    { name: 'Madison W', nickname: 'Madi', roleCode: '', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 28 },
-    { name: 'Gregory P', nickname: 'Greg', roleCode: '', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 24 },
-    { name: 'Maddy A', nickname: 'Maddie', roleCode: '', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 28 },
+    { name: 'Manager', nickname: 'Manager', isChef: false, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 8 },
+    { name: 'Rikki J', nickname: 'Rikki', isChef: true, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 12 },
+    { name: 'Eden O', nickname: 'Eden', isChef: true, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 12 },
+    { name: 'Antonella F', nickname: 'Ant', isChef: true, startSubSlot: 0, endSubSlot: 31, lunchStartSubSlot: 12 },
+    { name: 'Margarita D', nickname: 'Marc', isChef: true, startSubSlot: 0, endSubSlot: 35, lunchStartSubSlot: 16 },
+    { name: 'Hilary B', nickname: 'Hilary', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 24 },
+    { name: 'Joshua I', nickname: 'Josh', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 24 },
+    { name: 'Londyn M', nickname: 'Maddy', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 28 },
+    { name: 'Madison W', nickname: 'Madi', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 28 },
+    { name: 'Gregory P', nickname: 'Greg', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 24 },
+    { name: 'Maddy A', nickname: 'Maddie', isChef: true, startSubSlot: 16, endSubSlot: 43, lunchStartSubSlot: 28 },
   ],
 
   // ─── Init ───────────────────────────────────────────────────────
@@ -204,7 +204,6 @@ const App = {
       title.textContent = 'Edit Employee';
       document.getElementById('emp-name').value = emp.name;
       document.getElementById('emp-nickname').value = emp.nickname;
-      document.getElementById('emp-role').value = emp.roleCode || '';
       document.getElementById('emp-start-hour').value = emp.startSubSlot;
       document.getElementById('emp-end-hour').value = emp.endSubSlot;
       document.getElementById('emp-lunch-hour').value = emp.lunchStartSubSlot !== null && emp.lunchStartSubSlot !== undefined ? emp.lunchStartSubSlot : '';
@@ -215,7 +214,6 @@ const App = {
       title.textContent = 'Add Employee';
       document.getElementById('emp-name').value = '';
       document.getElementById('emp-nickname').value = '';
-      document.getElementById('emp-role').value = '';
       document.getElementById('emp-start-hour').value = 0;
       document.getElementById('emp-end-hour').value = TOTAL_SUB_SLOTS - 1;
       document.getElementById('emp-lunch-hour').value = '';
@@ -248,7 +246,6 @@ const App = {
   _saveEmployee() {
     const name = document.getElementById('emp-name').value.trim();
     const nickname = document.getElementById('emp-nickname').value.trim();
-    const roleCode = document.getElementById('emp-role').value.trim();
     const startSubSlot = parseInt(document.getElementById('emp-start-hour').value);
     const endSubSlot = parseInt(document.getElementById('emp-end-hour').value);
     const lunchVal = document.getElementById('emp-lunch-hour').value;
@@ -271,7 +268,6 @@ const App = {
       if (emp) {
         emp.name = name;
         emp.nickname = nickname;
-        emp.roleCode = roleCode;
         emp.isChef = document.getElementById('emp-can-cook').checked;
         emp.startSubSlot = startSubSlot;
         emp.endSubSlot = endSubSlot;
@@ -287,7 +283,7 @@ const App = {
       }
     } else {
       const isChef = document.getElementById('emp-can-cook').checked;
-      const emp = createEmployee(name, nickname, roleCode, startSubSlot, endSubSlot, isChef, lunchStartSubSlot);
+      const emp = createEmployee(name, nickname, startSubSlot, endSubSlot, isChef, lunchStartSubSlot);
       this.employees.push(emp);
     }
 
@@ -314,7 +310,7 @@ const App = {
         '<span class="ri-name">' + emp.nickname + '</span>' +
         '<span class="ri-detail">' + emp.name + ' · ' +
         Engine.subSlotToSimpleTime(emp.startSubSlot) + '–' + Engine.subSlotToSimpleTime(emp.endSubSlot) +
-        (emp.isChef ? ' · 🧑‍🍳' : '') + (emp.roleCode ? ' · ' + emp.roleCode : '') +
+        (emp.isChef ? ' · 🧑‍🍳' : '') +  +
         (exists ? ' · ✅ Already added' : '') +
         '</span>';
 
@@ -347,7 +343,7 @@ const App = {
       if (self.employees.some(function(e) { return e.name === preset.name; })) return;
 
       const emp = createEmployee(
-        preset.name, preset.nickname, preset.roleCode,
+        preset.name, preset.nickname,
         preset.startSubSlot, preset.endSubSlot,
         preset.isChef, preset.lunchStartSubSlot
       );
@@ -763,7 +759,6 @@ const App = {
       const row = [
         this._csvEscape(emp.name),
         this._csvEscape(emp.nickname),
-        emp.roleCode || '',
         this._subSlotToTime(emp.startSubSlot),
         this._subSlotToTime(emp.endSubSlot),
         emp.lunchStartSubSlot !== undefined && emp.lunchStartSubSlot !== null
@@ -888,7 +883,6 @@ const App = {
         continue;
       }
 
-      const roleCode = colMap['role'] !== undefined ? (row[colMap['role']] || '').trim() : '';
       const shiftStartStr = colMap['shift start'] !== undefined ? (row[colMap['shift start']] || '').trim() : '';
       const shiftEndStr = colMap['shift end'] !== undefined ? (row[colMap['shift end']] || '').trim() : '';
       const lunchStartStr = colMap['lunch start'] !== undefined ? (row[colMap['lunch start']] || '').trim() : '';
@@ -918,7 +912,6 @@ const App = {
       if (existing) {
         // Update existing employee's schedule times only
         existing.nickname = nickname;
-        existing.roleCode = roleCode || existing.roleCode;
         existing.isChef = isChef;
         existing.startSubSlot = startSubSlot;
         existing.endSubSlot = endSubSlot;
@@ -933,7 +926,7 @@ const App = {
         }
         updateCount++;
       } else {
-        const emp = createEmployee(name, nickname, roleCode, startSubSlot, endSubSlot, isChef,
+        const emp = createEmployee(name, nickname, startSubSlot, endSubSlot, isChef,
           lunchStartSubSlot >= 0 ? lunchStartSubSlot : undefined);
         this.employees.push(emp);
         newCount++;
@@ -1193,16 +1186,16 @@ const App = {
     // ─── Employees from the real schedule ───
     // Shifts mapped to sub-slots: 10AM=0, each hour=4 sub-slots, ends 8:45PM=43
     this.employees = [
-      createEmployee('Antonella F', 'Ant',  'LP', 0, 33),   // 10:00-6:30
-      createEmployee('Rikki J',     'Rikki','Ba', 0, 27),   // 10:00-5:00
-      createEmployee('Margarita D', 'Marg', 'LP', 0, 33),   // 10:00-6:30
-      createEmployee('Hilary B',    'Hilary','',  6, 39),   // 11:30-7:30
-      createEmployee('Joshua I',    'Josh',  '',  10, 41),  // 12:30-8:30
-      createEmployee('Madison W',   'Madi',  '',  14, 43),  // 1:30-8:45
-      createEmployee('Gregory P',   'Greg',  '',  14, 43),  // 1:30-8:45
-      createEmployee('Maddy A',     'Maddy', '',  18, 43),  // 2:30-8:45
-      createEmployee('Londyn M',    'Madeline','',14, 43),  // 1:30-8:45
-      createEmployee('Bibi',        'Bibi',  '',   0, 7),   // 10:00-12:00 lunch only
+      createEmployee('Antonella F', 'Ant', 0, 33),   // 10:00-6:30
+      createEmployee('Rikki J',     'Rikki', 0, 27),   // 10:00-5:00
+      createEmployee('Margarita D', 'Marg', 0, 33),   // 10:00-6:30
+      createEmployee('Hilary B',    'Hilary', 6, 39),   // 11:30-7:30
+      createEmployee('Joshua I',    'Josh',  10, 41),  // 12:30-8:30
+      createEmployee('Madison W',   'Madi',  14, 43),  // 1:30-8:45
+      createEmployee('Gregory P',   'Greg',  14, 43),  // 1:30-8:45
+      createEmployee('Maddy A',     'Maddy', 18, 43),  // 2:30-8:45
+      createEmployee('Londyn M',    'Madeline', 14, 43),  // 1:30-8:45
+      createEmployee('Bibi',        'Bibi',  0, 7),   // 10:00-12:00 lunch only
     ];
 
     // Helper: set SRV then CK (CK=2 sub-slots, SRV=1-2 before it)

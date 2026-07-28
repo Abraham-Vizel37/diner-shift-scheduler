@@ -76,13 +76,8 @@ const Grid = {
     fullname.className = 'fullname';
     fullname.textContent = employee.name;
 
-    const badge = document.createElement('span');
-    badge.className = 'role-badge';
-    badge.textContent = employee.roleCode || '-';
-
     nameCell.appendChild(nickname);
     nameCell.appendChild(fullname);
-    nameCell.appendChild(badge);
 
     nameCell.addEventListener('click', (e) => {
       e.preventDefault();

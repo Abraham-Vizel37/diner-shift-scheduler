@@ -86,6 +86,10 @@ var AutoEngine = (function() {
     assignSRVandHST(cloned, coverage, config);
     warnings = warnings.concat(checkCoverageGaps(cloned, chefs, coverage));
 
+    // Post-processing: redistribute CK blocks for fairness.
+    // If any chef has 0 blocks and another has ≥2 more than minimum, move one.
+    redistributeCKForFairness(chefs, coverage, config);
+
     // Fill non-chef schedules with HST
     nonChefs.forEach(function(emp) {
       for (var i = emp.startSubSlot; i <= emp.endSubSlot; i++) {
@@ -127,7 +131,6 @@ var AutoEngine = (function() {
         id: emp.id,
         name: emp.name,
         nickname: emp.nickname,
-        roleCode: emp.roleCode,
         startSubSlot: emp.startSubSlot,
         endSubSlot: emp.endSubSlot,
         isChef: emp.isChef,
@@ -282,43 +285,16 @@ var AutoEngine = (function() {
     var totalCKBlocks = Math.ceil((coverage.end - coverage.start + 1) / 2);
     if (chefs.length === 0) return {};
 
-    // Proportional allocation by shift length
-    var totalWorkingSlots = 0;
-    chefs.forEach(function(c) {
-      totalWorkingSlots += (c.endSubSlot - c.startSubSlot + 1);
-    });
+    // Equal distribution — every chef gets the same number of cook blocks.
+    // Any remainder (e.g. 23 blocks / 7 chefs = 3 each + 2 remainder)
+    // goes to the first N chefs so no one cooks more than 1 extra.
+    var baseBlocks = Math.floor(totalCKBlocks / chefs.length);
+    var remainder = totalCKBlocks % chefs.length;
 
     var allocations = {};
-    var allocated = 0;
     chefs.forEach(function(c, idx) {
-      var workingSlots = c.endSubSlot - c.startSubSlot + 1;
-      var share = Math.round(totalCKBlocks * (workingSlots / totalWorkingSlots));
-      // Ensure at least 1 if chef present
-      if (share === 0 && totalCKBlocks > 0) share = 1;
-      allocations[c.id] = { target: share };
-      allocated += share;
+      allocations[c.id] = { target: baseBlocks + (idx < remainder ? 1 : 0) };
     });
-
-    // Adjust for rounding: add/remove from longest-shift chefs
-    var diff = totalCKBlocks - allocated;
-    var sorted = chefs.slice().sort(function(a, b) {
-      return (b.endSubSlot - b.startSubSlot) - (a.endSubSlot - a.startSubSlot);
-    });
-    var i = 0;
-    while (diff > 0) {
-      allocations[sorted[i % sorted.length].id].target++;
-      diff--;
-      i++;
-    }
-    while (diff < 0) {
-      // Don't go below 1 if chef has at least one block originally
-      var chefId = sorted[i % sorted.length].id;
-      if (allocations[chefId].target > 1) {
-        allocations[chefId].target--;
-        diff++;
-      }
-      i++;
-    }
 
     // Initialize counters
     chefs.forEach(function(c) {
@@ -428,21 +404,36 @@ var AutoEngine = (function() {
       for (var bs = blockStart - 1; bs >= Math.max(blockStart - 2, chef.startSubSlot); bs--) {
         if (chef.schedule[bs] === 'BK') return false;
       }
+      // Respect allocation cap — don't keep giving blocks to chefs at their target
+      if (allocations[chef.id].used >= allocations[chef.id].target) return false;
       return true;
     });
   }
 
   function findEligibleChefsRelaxed(chefs, allocations, blockStart, blockEnd, config, cookHistory) {
     // Relaxed eligibility: drops soft constraints when strict pass fails.
-    // Hard constraints retained: shift bounds, lunch/BK during the block.
-    // Soft constraints dropped: allocation cap, shift-start rule, post-lunch gap, post-break gap.
-    // Still prefers chefs who haven't cooked at this slot recently (avoid adjacent CK).
+    // Still tries to respect allocation caps to keep distribution even.
+    // First pass: relaxed chefs who haven't hit their target yet
+    var underTarget = chefs.filter(function(chef) {
+      if (blockStart < chef.startSubSlot || blockEnd > chef.endSubSlot) return false;
+      for (var s = blockStart; s <= blockEnd; s++) {
+        if (chef.schedule[s] === 'L' || chef.schedule[s] === 'BK') return false;
+      }
+      if (cookHistory.length > 0) {
+        var lastCook = cookHistory[cookHistory.length - 1];
+        if (lastCook.chefId === chef.id && lastCook.startSlot >= blockStart - 4) return false;
+      }
+      return allocations[chef.id].used < allocations[chef.id].target;
+    });
+
+    if (underTarget.length > 0) return underTarget;
+
+    // Second pass: any chef (including those over target) as last resort
     return chefs.filter(function(chef) {
       if (blockStart < chef.startSubSlot || blockEnd > chef.endSubSlot) return false;
       for (var s = blockStart; s <= blockEnd; s++) {
         if (chef.schedule[s] === 'L' || chef.schedule[s] === 'BK') return false;
       }
-      // Avoid the chef who just cooked (if any) to prevent adjacent CK blocks
       if (cookHistory.length > 0) {
         var lastCook = cookHistory[cookHistory.length - 1];
         if (lastCook.chefId === chef.id && lastCook.startSlot >= blockStart - 4) return false;
@@ -492,6 +483,68 @@ var AutoEngine = (function() {
     }
 
     return { name: lastChef.name || lastChef.nickname, undoneSlot: last.startSlot };
+  }
+
+  // ─── Fairness Redistribution ─────────────────────────────────────────
+
+  function redistributeCKForFairness(chefs, coverage, config) {
+    if (chefs.length < 2) return;
+
+    // Count CK blocks per chef
+    function countCK(chef) {
+      var count = 0;
+      for (var i = chef.startSubSlot; i <= chef.endSubSlot; i++) {
+        if (chef.schedule[i] === 'CK') count++;
+      }
+      return count / 2; // CK blocks (not slots)
+    }
+
+    // Keep trying until we can't improve fairness
+    for (var pass = 0; pass < 5; pass++) {
+      var blocks = chefs.map(function(c) { return countCK(c); });
+      var maxBlocks = Math.max.apply(null, blocks);
+      var maxChef = chefs[blocks.indexOf(maxBlocks)];
+      var minChef = null;
+      var minBlocks = Infinity;
+
+      // Find the chef with the fewest blocks (who can still cook)
+      for (var i = 0; i < chefs.length; i++) {
+        var b = blocks[i];
+        if (b < minBlocks && chefs[i].id !== maxChef.id) {
+          minBlocks = b;
+          minChef = chefs[i];
+        }
+      }
+
+      // If difference is ≤1 or minChef has enough, we're done
+      if (!minChef || maxBlocks - minBlocks <= 1) break;
+
+      // Find a CK block of maxChef that minChef can take over
+      var found = false;
+      for (var s = maxChef.startSubSlot; s <= maxChef.endSubSlot - 1; s++) {
+        if (maxChef.schedule[s] !== 'CK') continue;
+        // Check if minChef is working and available at this slot
+        if (s < minChef.startSubSlot || s + 1 > minChef.endSubSlot) continue;
+        if (minChef.schedule[s] === 'L' || minChef.schedule[s] === 'BK') continue;
+        if (minChef.schedule[s + 1] === 'L' || minChef.schedule[s + 1] === 'BK') continue;
+        // Check minChef isn't right after a break
+        if (s === minChef.startSubSlot && minChef.startSubSlot !== config.openingTime) continue;
+        for (var bs = s - 1; bs >= Math.max(s - 2, minChef.startSubSlot); bs--) {
+          if (minChef.schedule[bs] === 'BK') { s = -1; break; }
+        }
+        if (s === -1) continue;
+
+        // Move the CK block: clear from maxChef, assign to minChef
+        maxChef.schedule[s] = 'HST';
+        maxChef.schedule[s + 1] = 'HST';
+        minChef.schedule[s] = 'CK';
+        minChef.schedule[s + 1] = 'CK';
+        found = true;
+        break;
+      }
+
+      if (!found) break; // can't improve further
+    }
   }
 
   // ─── Phase 6: SRV and HST Assignment ───────────────────────────────────

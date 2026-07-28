@@ -86,14 +86,14 @@ function subSlotFromTime(hour12, minute) {
 
 let nextId = 1;
 
-function createEmployee(name, nickname, roleCode, startSubSlot, endSubSlot, isChef, lunchStartSubSlot) {
+function createEmployee(name, nickname, startSubSlot, endSubSlot, isChef, lunchStartSubSlot) {
   // Input clamping — prevent invalid ranges
   startSubSlot = Math.max(0, Math.min(TOTAL_SUB_SLOTS - 1, parseInt(startSubSlot) || 0));
   endSubSlot = Math.max(startSubSlot, Math.min(TOTAL_SUB_SLOTS - 1, parseInt(endSubSlot) || TOTAL_SUB_SLOTS - 1));
 
-  // Default isChef: LP (lead) and Ba (bartender/chef) are chefs
+  // Default isChef: all employees can cook unless explicitly set to false
   if (isChef === undefined) {
-    isChef = (roleCode === 'LP' || roleCode === 'Ba');
+    isChef = true;
   }
 
   const schedule = [];
@@ -107,7 +107,7 @@ function createEmployee(name, nickname, roleCode, startSubSlot, endSubSlot, isCh
     id: `emp_${nextId++}`,
     name,
     nickname: nickname || name,
-    roleCode: roleCode || '',
+    
     startSubSlot,
     endSubSlot,
     isChef: !!isChef,
