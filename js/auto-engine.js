@@ -29,10 +29,18 @@ var AutoEngine = (function() {
     // Clone employees so we don't mutate originals
     var cloned = cloneEmployees(employees);
 
-    // Reset all schedules (clear existing manual assignments)
+    // Reset schedules — clear role assignments but PRESERVE user-placed
+    // breaks (BK) and lunch (L) since those are set manually.
     cloned.forEach(function(emp) {
       for (var i = 0; i < T; i++) {
-        emp.schedule[i] = (i < emp.startSubSlot || i > emp.endSubSlot) ? null : undefined;
+        if (i < emp.startSubSlot || i > emp.endSubSlot) {
+          emp.schedule[i] = null; // off-shift
+        } else {
+          // Keep BK and L, clear everything else for fresh assignment
+          if (emp.schedule[i] !== 'BK' && emp.schedule[i] !== 'L') {
+            emp.schedule[i] = undefined;
+          }
+        }
       }
     });
 
@@ -56,19 +64,13 @@ var AutoEngine = (function() {
     // Phase 1: Place lunches
     errors = errors.concat(placeLunches(cloned));
 
-    // Phase 2: Place breaks for chefs
+    // Breaks are user-placed via tap-to-cycle — not auto-generated.
+    // The scheduler respects existing BK slots when assigning cooks.
+
+    // Get chefs list for cook scheduling
     var chefs = Engine.getChefs(cloned);
-    var nonChefs = Engine.getNonChefs(cloned);
-    chefs.forEach(function(chef) {
-      warnings = warnings.concat(placeBreaks(chef, config));
-    });
 
-    // Place breaks for non-chefs (simpler — just two 15-min breaks)
-    nonChefs.forEach(function(emp) {
-      placeSimpleBreaks(emp);
-    });
-
-    // Phase 3: Compute coverage window
+    // Phase 2: Compute coverage window
     var coverage = computeCoverageWindow(chefs, cloned);
     log.push({ phase: 'coverage', start: coverage.start, end: coverage.end });
 
@@ -90,8 +92,8 @@ var AutoEngine = (function() {
     // If any chef has 0 blocks and another has ≥2 more than minimum, move one.
     redistributeCKForFairness(chefs, coverage, config);
 
-    // Fill non-chef schedules with HST
-    nonChefs.forEach(function(emp) {
+    // Fill all unscheduled slots with HST
+    cloned.forEach(function(emp) {
       for (var i = emp.startSubSlot; i <= emp.endSubSlot; i++) {
         if (!emp.schedule[i] || emp.schedule[i] === 'HST') {
           emp.schedule[i] = 'HST';
@@ -399,10 +401,6 @@ var AutoEngine = (function() {
       if (chef.lunchStartSubSlot !== null && chef.lunchStartSubSlot !== undefined) {
         var lunchEnd = chef.lunchStartSubSlot + 3;
         if (blockStart <= lunchEnd + config.postLunchGap && blockStart > lunchEnd) return false;
-      }
-      // R-new: No CK within 2 slots (30 min) after any break
-      for (var bs = blockStart - 1; bs >= Math.max(blockStart - 2, chef.startSubSlot); bs--) {
-        if (chef.schedule[bs] === 'BK') return false;
       }
       // Respect allocation cap — don't keep giving blocks to chefs at their target
       if (allocations[chef.id].used >= allocations[chef.id].target) return false;
