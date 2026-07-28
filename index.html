@@ -16,23 +16,36 @@
     <header>
       <h1>Diner Shift Scheduler</h1>
       <div id="toolbar">
-        <button id="btn-add-employee" title="Add Employee">+ Employee</button>
-        <button id="btn-roster" title="Add from Roster">👥 Roster</button>
-        <button id="btn-callout-mode" title="Call-Out Mode">📞 Call-Out</button>
-        <button id="btn-validate" title="Validate Schedule">✓ Validate</button>
-        <button id="btn-show-list" title="View Daily List">📋 List</button>
-        <span class="separator">|</span>
-        <button id="btn-save" title="Save to Browser">💾 Save</button>
-        <button id="btn-load" title="Load from Browser">📂 Load</button>
-        <button id="btn-import" title="Import from CSV">📥 Import</button>
-        <button id="btn-export" title="Export to CSV">📤 Export</button>
-        <button id="btn-reset" title="Reset">🔄 Reset</button>
-        <span class="separator">|</span>
-        <button id="btn-auto-assign" title="Auto-Assign Schedule">🤖 Auto-Assign</button>
-        <span class="separator">|</span>
-        <button id="btn-help" title="Need Help?" onclick="window.open('https://docs.google.com/document/d/1aX4oIKwVGf641Gk1hAhiItgmzbNunMs3N0m7-lG5UJs/edit?usp=sharing','_blank')">❓ Need Help?</button>
-        <span class="separator">|</span>
-        <button id="btn-mode-toggle" title="Switch to App Mode" class="mode-toggle">📱 App</button>
+        <div class="tb-group">
+          <span class="tb-label">Schedule</span>
+          <div class="tb-buttons">
+            <button id="btn-auto-assign" title="Auto-Assign Schedule">🤖 Auto</button>
+            <button id="btn-validate" title="Validate Schedule">✓ Validate</button>
+            <button id="btn-show-list" title="View Daily List">📋 List</button>
+            <button id="btn-callout-mode" title="Call-Out Mode">📞 Call-Out</button>
+          </div>
+        </div>
+        <div class="tb-group">
+          <span class="tb-label">Staff</span>
+          <div class="tb-buttons">
+            <button id="btn-add-employee" title="Add Employee">➕ Add</button>
+            <button id="btn-roster" title="Add from Roster">👥 Roster</button>
+          </div>
+        </div>
+        <div class="tb-group">
+          <span class="tb-label">Data</span>
+          <div class="tb-buttons">
+            <button id="btn-save" title="Save to Browser">💾 Save</button>
+            <button id="btn-load" title="Load from Browser">📂 Load</button>
+            <button id="btn-import" title="Import from CSV">📥 Import</button>
+            <button id="btn-export" title="Export to CSV">📤 Export</button>
+            <button id="btn-reset" title="Reset">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="tb-group tb-group-right">
+          <button id="btn-help" title="Need Help?" onclick="window.open('https://docs.google.com/document/d/1aX4oIKwVGf641Gk1hAhiItgmzbNunMs3N0m7-lG5UJs/edit?usp=sharing','_blank')">❓ Help</button>
+          <button id="btn-mode-toggle" title="Switch to App Mode" class="mode-toggle">📱 App</button>
+        </div>
         <a id="export-anchor" download="diner-employees.csv" style="position:absolute;left:-9999px;top:0"></a>
       </div>
     </header>

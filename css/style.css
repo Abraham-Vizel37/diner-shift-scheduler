@@ -830,3 +830,48 @@ body.app-mode #app-schedule-grid .grid-cell { width: 18px; height: 22px; font-si
   padding-bottom: 2px;
   border-bottom: 1px solid var(--border);
 }
+
+/* ─── Toolbar Groups ──────────────────────────────────────────────── */
+#toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.tb-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tb-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+  padding-left: 2px;
+}
+.tb-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.tb-group-right {
+  margin-left: auto;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+}
+.tb-group-right button {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+
+/* Remove old separators */
+#toolbar .separator { display: none; }
+
+/* Shrink buttons slightly for the grouped layout */
+#toolbar button {
+  padding: 4px 9px;
+  font-size: 11px;
+}
