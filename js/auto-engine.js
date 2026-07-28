@@ -402,6 +402,10 @@ var AutoEngine = (function() {
         var lunchEnd = chef.lunchStartSubSlot + 3;
         if (blockStart <= lunchEnd + config.postLunchGap && blockStart > lunchEnd) return false;
       }
+      // R5: No CK for 2 slots (30 min) after a break — transition through SRV/HST
+      for (var bs = blockStart - 1; bs >= Math.max(blockStart - 2, chef.startSubSlot); bs--) {
+        if (chef.schedule[bs] === 'BK') return false;
+      }
       // Respect allocation cap — don't keep giving blocks to chefs at their target
       if (allocations[chef.id].used >= allocations[chef.id].target) return false;
       return true;
