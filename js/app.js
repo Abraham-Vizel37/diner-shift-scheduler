@@ -308,9 +308,7 @@ const App = {
       div.innerHTML =
         '<input type="checkbox"' + (exists ? ' disabled' : '') + '>' +
         '<span class="ri-name">' + emp.nickname + '</span>' +
-        '<span class="ri-detail">' + emp.name + ' · ' +
-        Engine.subSlotToSimpleTime(emp.startSubSlot) + '–' + Engine.subSlotToSimpleTime(emp.endSubSlot) +
-        (emp.isChef ? ' · 🧑‍🍳' : '') +  +
+        '<span class="ri-detail">' + emp.name +
         (exists ? ' · ✅ Already added' : '') +
         '</span>';
 
